@@ -4,7 +4,7 @@ using MongoDB.Driver;
 
 namespace ELTracker.Managers
 {
-    internal class DonationManager
+    internal class DonationManager : IDonationManager
     {
         private readonly IMongoCollection<Donation> _donations;
         private readonly IMongoCollection<Donor> _donors;

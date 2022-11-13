@@ -5,7 +5,7 @@ using ELTracker.Models.SubModels;
 
 namespace ELTracker.Managers;
 
-internal class ServerManager
+internal class ServerManager : IServerManager
 {
     private readonly IMongoCollection<Server> _servers;
 
