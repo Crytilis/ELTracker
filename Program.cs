@@ -2,6 +2,7 @@ using Discord;
 using Discord.Addons.Hosting;
 using Discord.Interactions;
 using Discord.WebSocket;
+using ELTracker.Managers;
 using ELTracker.Services;
 using ELTracker.Settings;
 using Microsoft.Extensions.Options;
@@ -85,6 +86,8 @@ public class Program
                     var restClient = new RestClient(new RestClientOptions(restSettings.BaseUrl));
                     return restClient;
                 });
+                services.AddScoped(typeof(IServerManager), typeof(ServerManager));
+                services.AddScoped(typeof(IDonationManager), typeof(DonationManager));
                 services.AddHostedService<InteractionHandler>();
                 services.AddHostedService<StatusService>();
                 // services.AddScoped(typeof(IGuildManager<>), typeof(GuildManager<>));
