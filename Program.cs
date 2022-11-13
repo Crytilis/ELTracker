@@ -17,7 +17,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
+            .MinimumLevel.Information()
             .Enrich.FromLogContext()
             .WriteTo.Console(outputTemplate: "[{Level:w4}] {Message:lj}{NewLine}{Exception}", theme: SerilogThemes.ExtraLifeTracker)
             .CreateLogger();
@@ -90,14 +90,6 @@ public class Program
                 services.AddScoped(typeof(IDonationManager), typeof(DonationManager));
                 services.AddHostedService<InteractionHandler>();
                 services.AddHostedService<StatusService>();
-                // services.AddScoped(typeof(IGuildManager<>), typeof(GuildManager<>));
-                // services.AddScoped(typeof(IDonorManager<>), typeof(DonorManager<>));
-                // services.AddScoped(typeof(IAltDonorManager<>), typeof(AltDonorManager<>));
-                // services.AddScoped(typeof(ITotalManager), typeof(TotalManager));
-                // services.AddScoped<IGuildService, GuildService>();
-                // services.AddScoped<IDonorService, DonorService>();
-                // services.AddHostedService<DonationTracker>();
-                // services.AddHostedService<RoleService>();
             });
     }
 }
