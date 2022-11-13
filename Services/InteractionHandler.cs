@@ -5,6 +5,7 @@ using Discord.Addons.Hosting.Util;
 using Discord.Interactions;
 using Discord.WebSocket;
 using ELTracker.Settings;
+using Microsoft.Extensions.Options;
 
 namespace ELTracker.Services;
 
@@ -14,22 +15,23 @@ public class InteractionHandler : DiscordClientService
     private readonly InteractionService _interactionService;
     private readonly IHostEnvironment _environment;
     private readonly IConfiguration _configuration;
+    private readonly IBotSettings _botSettings;
     // private readonly IDonorService _userService;
     // private readonly IGuildService _guildService;
 
-    public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider provider, InteractionService interactionService, IHostEnvironment environment, IConfiguration configuration) : base(client, logger)
+    public InteractionHandler(DiscordSocketClient client, ILogger<DiscordClientService> logger, IServiceProvider provider, InteractionService interactionService, IHostEnvironment environment, IConfiguration configuration, IOptions<BotSettings> botSettings) : base(client, logger)
     {
         _provider = provider;
         _interactionService = interactionService;
         _environment = environment;
         _configuration = configuration;
+        _botSettings = botSettings.Value;
         // _guildService = _provider.CreateAsyncScope().ServiceProvider.GetService<IGuildService>();
         // _userService = _provider.CreateAsyncScope().ServiceProvider.GetService<IDonorService>();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var botSettings = _provider.GetRequiredService<BotSettings>();
         // Process the InteractionCreated payloads to execute Interactions commands
         Client.InteractionCreated += HandleInteraction;
         Client.JoinedGuild += OnGuildJoined;
@@ -47,9 +49,9 @@ public class InteractionHandler : DiscordClientService
         // If DOTNET_ENVIRONMENT is set to development, only register the commands to a single guild
         if (_environment.IsDevelopment())
         {
-            if (botSettings != null && Client.Guilds.Any(x => x.Id.Equals(botSettings.DevGuild)))
+            if (_botSettings != null && Client.Guilds.Any(x => x.Id.Equals(_botSettings.DevGuild)))
             {
-                await _interactionService.RegisterCommandsToGuildAsync(botSettings.DevGuild);
+                await _interactionService.RegisterCommandsToGuildAsync(_botSettings.DevGuild);
             }
             else
             {

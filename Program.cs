@@ -2,12 +2,12 @@ using Discord;
 using Discord.Addons.Hosting;
 using Discord.Interactions;
 using Discord.WebSocket;
-using ELTracker.Logger;
+using ELTracker.Services;
 using ELTracker.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using RestSharp;
-using LogLevel = Microsoft.Extensions.Logging.LogLevel;
+using Serilog;
 
 namespace ELTracker;
 
@@ -15,15 +15,20 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .Enrich.FromLogContext()
+            .WriteTo.Console(outputTemplate: "[{Level:w4}] {Message:lj}{NewLine}{Exception}", theme: SerilogThemes.ExtraLifeTracker)
+            .CreateLogger();
+
         try
         {
             await CreateHostBuilder(args).Build().RunAsync();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Log.WriteException(e);
+            Log.Error(ex, "{message}\r\n\t{stack}", ex.Message, ex.StackTrace);
         }
-            
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args)
@@ -37,11 +42,7 @@ public class Program
                     .AddJsonFile($"appsettings.{env}.json", optional: false, reloadOnChange: true)
                     .Build();
             })
-            .ConfigureLogging(x =>
-            {
-                x.AddConsole();
-                x.SetMinimumLevel(LogLevel.Debug);
-            })
+            .UseSerilog()
             .ConfigureDiscordHost((context, config) =>
             {
                 config.SocketConfig = new DiscordSocketConfig
@@ -84,14 +85,14 @@ public class Program
                     var restClient = new RestClient(new RestClientOptions(restSettings.BaseUrl));
                     return restClient;
                 });
+                services.AddHostedService<InteractionHandler>();
+                services.AddHostedService<StatusService>();
                 // services.AddScoped(typeof(IGuildManager<>), typeof(GuildManager<>));
                 // services.AddScoped(typeof(IDonorManager<>), typeof(DonorManager<>));
                 // services.AddScoped(typeof(IAltDonorManager<>), typeof(AltDonorManager<>));
                 // services.AddScoped(typeof(ITotalManager), typeof(TotalManager));
                 // services.AddScoped<IGuildService, GuildService>();
                 // services.AddScoped<IDonorService, DonorService>();
-                // services.AddHostedService<InteractionHandler>();
-                // services.AddHostedService<StatusService>();
                 // services.AddHostedService<DonationTracker>();
                 // services.AddHostedService<RoleService>();
             });
