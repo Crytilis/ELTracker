@@ -10,7 +10,7 @@ public class Server
     [BsonId]
     public string Id { get; set; }
 
-    public string GuildName { get; set; }
+    public string ServerName { get; set; }
 
     [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
     public Dictionary<int, DonationTierDetails> DonationTiers { get; set; }
