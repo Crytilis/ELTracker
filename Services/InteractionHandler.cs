@@ -29,7 +29,7 @@ public class InteractionHandler : DiscordClientService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var botSettings = _configuration.GetValue<BotSettings>("BotSettings");
+        var botSettings = _provider.GetRequiredService<BotSettings>();
         // Process the InteractionCreated payloads to execute Interactions commands
         Client.InteractionCreated += HandleInteraction;
         Client.JoinedGuild += OnGuildJoined;

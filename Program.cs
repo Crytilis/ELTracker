@@ -44,7 +44,6 @@ public class Program
             })
             .ConfigureDiscordHost((context, config) =>
             {
-                var botSettings = context.Configuration.GetValue<BotSettings>("BotSettings");
                 config.SocketConfig = new DiscordSocketConfig
                 {
                     GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers |
@@ -54,8 +53,7 @@ public class Program
                     AlwaysDownloadUsers = true,
                     MessageCacheSize = 200
                 };
-                if (botSettings != null) config.Token = botSettings.Token;
-                //config.Token = context.Configuration["BotToken"];
+                config.Token = context.Configuration["BotSettings:Token"]!;
             })
             .UseInteractionService((_, config) =>
             {
@@ -66,7 +64,7 @@ public class Program
             })
             .ConfigureServices((context, services) =>
             {
-                services.Configure<HostOptions>(option => { option.ShutdownTimeout = TimeSpan.FromSeconds(20); });
+                services.Configure<HostOptions>(option => { option.ShutdownTimeout = TimeSpan.FromSeconds(10); });
                 services.Configure<DatabaseSettings>(context.Configuration.GetSection(nameof(DatabaseSettings)));
                 services.AddSingleton(sp =>
                 {
