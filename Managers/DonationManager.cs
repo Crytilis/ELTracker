@@ -116,7 +116,7 @@ namespace ELTracker.Managers
 
 
         // ExtDonors Crud Tasks (Manually added donors)
-        private async Task<ExtDonor> GetExtDonorById(string id)
+        public async Task<ExtDonor> GetExtDonorById(string id)
         {
             var filter = Builders<ExtDonor>.Filter.Eq("_id", id);
             return await _extDonors.FindAsync<ExtDonor>(filter).Result.FirstOrDefaultAsync();
