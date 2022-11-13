@@ -76,7 +76,7 @@ namespace ELTracker.Managers
 
 
         // Donors Crud Tasks
-        private async Task<Donor> GetDonorById(string id)
+        public async Task<Donor> GetDonorById(string id)
         {
             var filter = Builders<Donor>.Filter.Eq("_id", id);
             return await _donors.FindAsync<Donor>(filter).Result.FirstOrDefaultAsync();
