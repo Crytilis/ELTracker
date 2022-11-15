@@ -7,7 +7,10 @@ using ELTracker.Services;
 using ELTracker.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
+using RestSharp.Serializers.NewtonsoftJson;
 using Serilog;
 
 namespace ELTracker;
@@ -17,7 +20,7 @@ public class Program
     public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
+            .MinimumLevel.Debug()
             .Enrich.FromLogContext()
             .WriteTo.Console(outputTemplate: "[{Level:w4}] {Message:lj}{NewLine}{Exception}", theme: SerilogThemes.ExtraLifeTracker)
             .CreateLogger();
@@ -28,7 +31,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "{message}\r\n\t{stack}", ex.Message, ex.StackTrace);
+            Log.Fatal(ex, "The host terminated unexpectedly\r\n\t{message}\r\n\t{stack}", ex.Message, ex.StackTrace);
         }
     }
 
@@ -82,14 +85,24 @@ public class Program
                 services.Configure<RestSettings>(context.Configuration.GetSection(nameof(RestSettings)));
                 services.AddSingleton(sp =>
                 {
+                    var serializerSettings = new JsonSerializerSettings {
+                        ContractResolver     = new CamelCasePropertyNamesContractResolver(),
+                        DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                        TypeNameHandling     = TypeNameHandling.Auto,
+                        NullValueHandling    = NullValueHandling.Ignore,
+                        Formatting           = Formatting.None,
+                        ConstructorHandling  = ConstructorHandling.AllowNonPublicDefaultConstructor
+                    };
                     var restSettings = sp.GetRequiredService<IOptions<RestSettings>>().Value;
                     var restClient = new RestClient(new RestClientOptions(restSettings.BaseUrl));
+                    restClient.UseNewtonsoftJson(serializerSettings);
                     return restClient;
                 });
                 services.AddScoped(typeof(IServerManager), typeof(ServerManager));
                 services.AddScoped(typeof(IDonationManager), typeof(DonationManager));
                 services.AddHostedService<InteractionHandler>();
                 services.AddHostedService<StatusService>();
+                services.AddHostedService<TrackingService>();
             });
     }
 }

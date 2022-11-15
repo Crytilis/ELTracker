@@ -1,15 +1,15 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.IdGenerators;
 using Newtonsoft.Json;
 
 namespace ELTracker.Models;
 
 [Collection("Donations")]
-[BsonIgnoreExtraElements]
 internal class Donation
 {
-    [BsonId]
-    [JsonProperty("donorID")]
-    public string DonorId { get; set; }
+    [BsonId(IdGenerator = typeof(StringObjectIdGenerator))]
+    [JsonIgnore]
+    public string Id { get; set; }
 
     [JsonProperty("displayName")]
     public string DisplayName { get; set; }
@@ -19,4 +19,7 @@ internal class Donation
 
     [JsonProperty("sumDonations")]
     public decimal Amount { get; set; }
+
+    [JsonIgnore]
+    public bool SentToDonors { get; set; }
 }

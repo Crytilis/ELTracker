@@ -51,6 +51,12 @@ namespace ELTracker.Managers
 
 
         // Donations Crud Tasks
+        public async Task<bool> CheckDonationExists(string name)
+        {
+            var filter = Builders<Donation>.Filter.Eq("DisplayName", name);
+            var donation = await _donations.FindAsync<Donation>(filter).Result.FirstOrDefaultAsync();
+            return donation != null;
+        }
         public async Task<Donation> GetDonationByName(string name)
         {
             var filter = Builders<Donation>.Filter.Eq("DisplayName", name);
@@ -63,7 +69,31 @@ namespace ELTracker.Managers
             {
                 await _donations.InsertOneAsync(donation);
             }
-            catch (MongoWriteException e)
+            catch (Exception e)
+            {
+                result.Succeeded = false;
+                result.ErrorMessage = e.Message;
+                return result;
+            }
+
+            result.Succeeded = true;
+            return result;
+        }
+        public async Task<List<Donation>> GetAllDonations()
+        {
+            var filter = Builders<Donation>.Filter.Empty;
+            return await _donations.Find(filter).ToListAsync();
+        }
+        public async Task<OperationResult> DonationSentToDonors(Donation donation, bool sentToDonors)
+        {
+            var filter = Builders<Donation>.Filter.Eq("_id", donation.Id);
+            var updateDef = Builders<Donation>.Update.Set(d => d.SentToDonors, sentToDonors);
+            var result = new OperationResult();
+            try
+            {
+                await _donations.UpdateOneAsync(filter, updateDef);
+            }
+            catch (Exception e)
             {
                 result.Succeeded = false;
                 result.ErrorMessage = e.Message;
@@ -76,6 +106,12 @@ namespace ELTracker.Managers
 
 
         // Donors Crud Tasks
+        public async Task<bool> CheckDonorExists(string name)
+        {
+            var filter = Builders<Donor>.Filter.Eq("Username", name);
+            var donor = await _donors.FindAsync<Donor>(filter).Result.FirstOrDefaultAsync();
+            return donor != null;
+        }
         public async Task<Donor> GetDonorById(string id)
         {
             var filter = Builders<Donor>.Filter.Eq("_id", id);
@@ -98,7 +134,7 @@ namespace ELTracker.Managers
             {
                 await _donors.InsertOneAsync(donor);
             }
-            catch (MongoWriteException e)
+            catch (Exception e)
             {
                 result.Succeeded = false;
                 result.ErrorMessage = e.Message;
@@ -114,8 +150,32 @@ namespace ELTracker.Managers
             return await _donors.Find(filter).ToListAsync();
         }
 
+        public async Task<OperationResult> ReplaceDonorRecord(Donor oldRecord, Donor newRecord)
+        {
+            var filter = Builders<Donor>.Filter.Eq("_id", oldRecord.Id);
+            var result = new OperationResult();
+            try
+            {
+                await _donors.ReplaceOneAsync(filter, newRecord);
+            }
+            catch (Exception e)
+            {
+                result.Succeeded = false;
+                result.ErrorMessage = e.Message;
+                return result;
+            }
+            result.Succeeded = true;
+            return result;
+        }
+
 
         // ExtDonors Crud Tasks (Manually added donors)
+        public async Task<bool> CheckExtDonorExists(string name)
+        {
+            var filter = Builders<ExtDonor>.Filter.Eq("Username", name);
+            var donor = await _extDonors.FindAsync<ExtDonor>(filter).Result.FirstOrDefaultAsync();
+            return donor != null;
+        }
         public async Task<ExtDonor> GetExtDonorById(string id)
         {
             var filter = Builders<ExtDonor>.Filter.Eq("_id", id);
@@ -138,7 +198,7 @@ namespace ELTracker.Managers
             {
                 await _extDonors.InsertOneAsync(donor);
             }
-            catch (MongoWriteException e)
+            catch (Exception e)
             {
                 result.Succeeded = false;
                 result.ErrorMessage = e.Message;

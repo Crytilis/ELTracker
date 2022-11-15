@@ -8,8 +8,7 @@ public class Donor : ICloneable
     [BsonId]
     public string Id { get; set; }
     public string Username { get; set; }
-    public string Alias { get; set; }
-    public DateTime LastDonatedOn { get; set; }
+    public List<string> DonationAliases { get; set; }
     public decimal DonationAmount { get; set; }
     public string AssignedTier { get; set; }
 
